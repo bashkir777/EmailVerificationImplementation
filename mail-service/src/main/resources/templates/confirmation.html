@@ -33,8 +33,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>Account Activation</h1>
-    <p class="greeting" th:text="'Hello ' + ${firstname} + ','"></p>
+    <h1 class="greeting" th:text="'Hello ' + ${firstname} + ','"></h1>
     <p>Thank you for signing up! Please use the following activation code to activate your account:</p>
     <div class="activation-code"><span th:text="${activation_code}"></span></div>
 </div>
