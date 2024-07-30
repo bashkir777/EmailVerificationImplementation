@@ -8,8 +8,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
   mail-service:
@@ -19,8 +19,12 @@ services:
       - 8081
     environment:
       - server_port=8081
-      - sender_gmail={email}
+      - sender_gmail={sender_email}
       - sender_app_password={app_password}
+      - rabbitmq_host=rabbitmq
+      - rabbitmq_port=5672
+      - rabbitmq_username=admin
+      - rabbitmq_password=admin
     depends_on:
       - rabbitmq
 volumes:
