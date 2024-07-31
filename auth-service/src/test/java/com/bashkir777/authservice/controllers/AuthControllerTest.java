@@ -43,6 +43,22 @@ public class AuthControllerTest {
 
         assertThatCode(() -> userService.getUserByEmail(MOCK_EMAIL))
                 .doesNotThrowAnyException();
-
     }
+
+    @Test
+    public void invalidEmailDoesNotRegistered() throws Exception {
+        final String INVALID_EMAIL = "someinvalidgmail.com";
+        var request = RegisterRequest.builder().email(INVALID_EMAIL)
+                .password("password")
+                .firstname("firstname")
+                .lastname("lastname").build();
+
+
+        String requestBody = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)).andExpect(status().isBadRequest());
+    }
+
 }

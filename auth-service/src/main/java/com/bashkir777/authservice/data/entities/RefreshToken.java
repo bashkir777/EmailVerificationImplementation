@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class RefreshToken {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     private String refreshToken;

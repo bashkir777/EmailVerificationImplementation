@@ -27,5 +27,32 @@ services:
       - rabbitmq_password=admin
     depends_on:
       - rabbitmq
+  auth-service:
+    build:
+      context: ./auth-service
+    ports:
+      - "8082:8082"
+    environment:
+      - rabbitmq_host=rabbitmq
+      - rabbitmq_port=5672
+      - rabbitmq_username=admin
+      - rabbitmq_password=admin
+      - database_url=jdbc:postgresql://database:5432/auth_service
+      - database_username=postgres
+      - database_password=THsF*3858
+    depends_on:
+      - mail-service
+      - database
+  database:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: auth_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: THsF*3858
+    expose:
+      - "5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
 volumes:
+  pg-data:
   rabbitmq-data:

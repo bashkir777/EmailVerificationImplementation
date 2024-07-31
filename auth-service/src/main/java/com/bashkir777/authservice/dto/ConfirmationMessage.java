@@ -1,6 +1,5 @@
 package com.bashkir777.authservice.dto;
 
-import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,10 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RegisterRequest {
-    @Email
-    private String email;
-    private String password;
+public class ConfirmationMessage {
     private String firstname;
-    private String lastname;
+    private String otp;
+    private String email;
 }
