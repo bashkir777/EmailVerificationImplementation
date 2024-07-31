@@ -2,6 +2,7 @@ package com.bashkir777.authservice.controllers;
 
 import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.dto.RegisterRequest;
+import com.bashkir777.authservice.services.OTPService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,11 @@ public class AuthControllerTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private OTPService otpService;
+
     @Test
-    public void userSuccessfullyRegistered() throws Exception {
+    public void userSuccessfullyRegisteredAndOtpSaved() throws Exception {
         final String MOCK_EMAIL = "some@gmail.com";
         var request = RegisterRequest.builder().email(MOCK_EMAIL)
                 .password("password")
@@ -43,6 +47,9 @@ public class AuthControllerTest {
 
         assertThatCode(() -> userService.getUserByEmail(MOCK_EMAIL))
                 .doesNotThrowAnyException();
+        assertThatCode(()-> otpService
+                .getOtpTokenByUser(userService.getUserByEmail(MOCK_EMAIL))
+        ).doesNotThrowAnyException();
     }
 
     @Test

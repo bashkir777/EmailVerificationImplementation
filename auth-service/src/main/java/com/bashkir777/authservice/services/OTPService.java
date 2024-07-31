@@ -9,6 +9,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -43,5 +44,10 @@ public class OTPService {
                 .build();
         otpTokenRepository.deleteOTPTokenByUser(user);
         otpTokenRepository.save(otpToken);
+    }
+
+    public OTPToken getOtpTokenByUser(User user) throws BadCredentialsException{
+        return otpTokenRepository.findByUser(user)
+                .orElseThrow(()-> new BadCredentialsException("OTP not found"));
     }
 }

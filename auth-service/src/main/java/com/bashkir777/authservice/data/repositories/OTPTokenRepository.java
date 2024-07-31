@@ -4,6 +4,9 @@ import com.bashkir777.authservice.data.entities.OTPToken;
 import com.bashkir777.authservice.data.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface OTPTokenRepository extends JpaRepository<OTPToken, Integer> {
     void deleteOTPTokenByUser(User user);
+    Optional<OTPToken> findByUser(User user);
 }
