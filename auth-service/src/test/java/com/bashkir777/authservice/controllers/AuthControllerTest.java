@@ -2,14 +2,14 @@ package com.bashkir777.authservice.controllers;
 
 import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
-import com.bashkir777.authservice.dto.LoginRequest;
-import com.bashkir777.authservice.dto.RegisterRequest;
-import com.bashkir777.authservice.dto.TokenPair;
-import com.bashkir777.authservice.dto.VerificationRequest;
+import com.bashkir777.authservice.dto.*;
 import com.bashkir777.authservice.services.AuthenticationService;
 import com.bashkir777.authservice.services.JwtService;
 import com.bashkir777.authservice.services.OTPService;
+import com.bashkir777.authservice.services.enums.Role;
+import com.bashkir777.authservice.services.enums.TokenType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -115,6 +115,35 @@ public class AuthControllerTest {
 
         assertThatCode(() ->
                 jwtService.decodeAndValidateToken(tokenPair[0].getRefreshToken())
+        ).doesNotThrowAnyException();
+
+    }
+
+    @Test
+    public void refreshTokenSuccessfully() throws Exception {
+        final String MOCK_EMAIL = "some@gmail.com";
+        RefreshToken refreshToken = RefreshToken.builder()
+                .refreshToken(jwtService.createJwt(MOCK_EMAIL, TokenType.REFRESH, Role.USER))
+                .build();
+
+        String requestBody = objectMapper.writeValueAsString(refreshToken);
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)).andExpect(status().isOk()).andReturn();
+        AccessToken[] accessToken = new AccessToken[1];
+
+
+
+        assertThatCode(() ->
+                accessToken[0] = objectMapper
+                        .readValue(
+                                mvcResult.getResponse().getContentAsString()
+                                , AccessToken.class
+                        )
+        ).doesNotThrowAnyException();
+
+        assertThatCode(() -> jwtService.decodeAndValidateToken(accessToken[0].getAccessToken())
         ).doesNotThrowAnyException();
 
     }

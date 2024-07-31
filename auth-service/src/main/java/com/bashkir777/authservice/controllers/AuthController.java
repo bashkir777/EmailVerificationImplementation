@@ -1,5 +1,6 @@
 package com.bashkir777.authservice.controllers;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.bashkir777.authservice.dto.*;
 import com.bashkir777.authservice.services.AuthenticationService;
 import com.bashkir777.authservice.services.enums.Role;
@@ -40,9 +41,14 @@ public class AuthController {
                 .body(authenticationService.login(loginRequest));
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<AccessToken> registerUser(@RequestBody RefreshToken refreshToken)
+            throws JWTVerificationException {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(authenticationService.refresh(refreshToken));
+    }
 
-
-    @ExceptionHandler({BadCredentialsException.class, OTPExpired.class, JsonProcessingException.class})
+    @ExceptionHandler({JWTVerificationException.class, BadCredentialsException.class, OTPExpired.class, JsonProcessingException.class})
     private ResponseEntity<OperationInfo> badCredentials(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(OperationInfo.builder().success(false)

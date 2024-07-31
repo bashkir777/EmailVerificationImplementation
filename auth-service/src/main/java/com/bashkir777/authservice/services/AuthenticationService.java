@@ -1,10 +1,13 @@
 package com.bashkir777.authservice.services;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
 import com.bashkir777.authservice.data.entities.User;
 import com.bashkir777.authservice.dto.*;
 import com.bashkir777.authservice.services.enums.Role;
+import com.bashkir777.authservice.services.enums.TokenType;
 import com.bashkir777.authservice.services.exceptions.OTPExpired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -83,4 +86,18 @@ public class AuthenticationService {
                 .message("Email containing verification code has been send")
                 .success(true).build();
     }
+
+    public AccessToken refresh(RefreshToken refreshToken) throws JWTVerificationException {
+
+        DecodedJWT decodedJWT
+                = jwtService.decodeAndValidateToken(refreshToken.getRefreshToken());
+
+        String email = decodedJWT.getSubject();
+        Role role = Role.valueOf(decodedJWT.getClaim("role").asString());
+
+        return AccessToken.builder().accessToken(jwtService
+                .createJwt(email, TokenType.ACCESS, role)).build();
+
+    }
+
 }
