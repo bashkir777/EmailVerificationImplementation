@@ -1,0 +1,8 @@
+{
+  "short_name": "Email Verification Implementation",
+  "name": "Email Verification Implementation",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
