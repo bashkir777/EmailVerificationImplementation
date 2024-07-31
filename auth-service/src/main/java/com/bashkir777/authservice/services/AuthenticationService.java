@@ -2,6 +2,8 @@ package com.bashkir777.authservice.services;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.bashkir777.authservice.data.dao.RefreshTokenService;
+import com.bashkir777.authservice.data.entities.RefreshToken;
 import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
 import com.bashkir777.authservice.data.entities.User;
@@ -23,6 +25,7 @@ public class AuthenticationService {
     private final OTPService otpService;
     private final ConfirmationProducer confirmationProducer;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public OperationInfo register(RegisterRequest registerRequest)
             throws JsonProcessingException, BadCredentialsException {
@@ -59,7 +62,18 @@ public class AuthenticationService {
             throw new BadCredentialsException("Invalid OTP");
         }
 
-        return jwtService.createTokenPair(verificationRequest.getEmail(), role);
+        User user = otpInDB.getUser();
+
+        TokenPair answer = jwtService.createTokenPair(verificationRequest.getEmail(), role);
+
+        refreshTokenService.saveRefreshToken(
+                RefreshToken.builder()
+                        .refreshToken(answer.getRefreshToken())
+                        .user(user)
+                        .build()
+        );
+
+        return answer;
     }
 
     public OperationInfo login(LoginRequest loginRequest)
@@ -87,7 +101,7 @@ public class AuthenticationService {
                 .success(true).build();
     }
 
-    public AccessToken refresh(RefreshToken refreshToken) throws JWTVerificationException {
+    public AccessToken refresh(RefreshTokenDTO refreshToken) throws JWTVerificationException {
 
         DecodedJWT decodedJWT
                 = jwtService.decodeAndValidateToken(refreshToken.getRefreshToken());

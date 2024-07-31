@@ -42,10 +42,10 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AccessToken> registerUser(@RequestBody RefreshToken refreshToken)
+    public ResponseEntity<AccessToken> registerUser(@RequestBody RefreshTokenDTO refreshTokenDTO)
             throws JWTVerificationException {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(authenticationService.refresh(refreshToken));
+                .body(authenticationService.refresh(refreshTokenDTO));
     }
 
     @ExceptionHandler({JWTVerificationException.class, BadCredentialsException.class, OTPExpired.class, JsonProcessingException.class})

@@ -9,7 +9,7 @@ import com.bashkir777.authservice.services.OTPService;
 import com.bashkir777.authservice.services.enums.Role;
 import com.bashkir777.authservice.services.enums.TokenType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.checkerframework.checker.units.qual.A;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -80,6 +80,8 @@ public class AuthControllerTest {
     }
 
     @Test
+    @Sql(scripts = "/sql/truncateUser.sql"
+            , executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void otpVerificationSuccessful() throws Exception {
         final String MOCK_EMAIL = "some@gmail.com";
         var registerRequest = RegisterRequest.builder().email(MOCK_EMAIL)
@@ -122,11 +124,11 @@ public class AuthControllerTest {
     @Test
     public void refreshTokenSuccessfully() throws Exception {
         final String MOCK_EMAIL = "some@gmail.com";
-        RefreshToken refreshToken = RefreshToken.builder()
+        RefreshTokenDTO refreshTokenDTO = RefreshTokenDTO.builder()
                 .refreshToken(jwtService.createJwt(MOCK_EMAIL, TokenType.REFRESH, Role.USER))
                 .build();
 
-        String requestBody = objectMapper.writeValueAsString(refreshToken);
+        String requestBody = objectMapper.writeValueAsString(refreshTokenDTO);
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/refresh")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -149,6 +151,8 @@ public class AuthControllerTest {
     }
 
     @Test
+    @Sql(scripts = "/sql/truncateUser.sql"
+            , executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void userSuccessfullyRegisteredAndOtpSaved() throws Exception {
         final String MOCK_EMAIL = "some@gmail.com";
         var request = RegisterRequest.builder().email(MOCK_EMAIL)
