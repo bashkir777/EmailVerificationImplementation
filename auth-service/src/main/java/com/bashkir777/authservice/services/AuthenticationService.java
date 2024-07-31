@@ -12,6 +12,7 @@ import com.bashkir777.authservice.services.enums.Role;
 import com.bashkir777.authservice.services.enums.TokenType;
 import com.bashkir777.authservice.services.exceptions.OTPExpired;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,15 @@ public class AuthenticationService {
     private final ConfirmationProducer confirmationProducer;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+
+    public void sendConfirmationMessage(ConfirmationMessage confirmationMessage)
+            throws JsonProcessingException, BadCredentialsException {
+        userService.getUserByEmail(confirmationMessage.getEmail());
+        otpService.saveOtpToken(confirmationMessage.getEmail()
+                , otpService.generateOtp());
+        confirmationProducer.produceMessage(confirmationMessage);
+    }
+
 
     public OperationInfo register(RegisterRequest registerRequest)
             throws JsonProcessingException, BadCredentialsException {
@@ -42,27 +52,30 @@ public class AuthenticationService {
                         .otp(otp)
                         .build()
         );
+
         return answer;
     }
-
-    public TokenPair verifyOtp(VerificationRequest verificationRequest, Role role)
+    private User validateOtpAndGetUser(String email, String otp)
             throws OTPExpired, BadCredentialsException{
-
         OTPToken otpInDB = otpService.getOtpTokenByUser(
-                userService.getUserByEmail(
-                        verificationRequest.getEmail()
-                )
+                userService.getUserByEmail(email)
         );
 
         if((new Date()).after(otpInDB.getExpirationDate())){
             throw new OTPExpired();
         }
 
-        if(!otpInDB.getOtp().equals(verificationRequest.getOtp())){
+        if(!otpInDB.getOtp().equals(otp)){
             throw new BadCredentialsException("Invalid OTP");
         }
 
-        User user = otpInDB.getUser();
+        return otpInDB.getUser();
+    }
+
+    public TokenPair verifyOtp(VerificationRequest verificationRequest, Role role)
+            throws OTPExpired, BadCredentialsException{
+
+        User user = validateOtpAndGetUser(verificationRequest.getEmail(), verificationRequest.getOtp());
 
         TokenPair answer = jwtService.createTokenPair(verificationRequest.getEmail(), role);
 
@@ -114,4 +127,16 @@ public class AuthenticationService {
 
     }
 
+    @Transactional
+    public OperationInfo resetPassword(ResetPassword resetPassword)
+            throws OTPExpired, BadCredentialsException{
+        User user = validateOtpAndGetUser(
+                resetPassword.getEmail(), resetPassword.getOtp()
+        );
+        user.setPassword(resetPassword.getNewPassword());
+        return OperationInfo.builder()
+                .success(true)
+                .message("Password has been changed successfully")
+                .build();
+    }
 }

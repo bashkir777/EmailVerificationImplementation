@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.servlet.MockMvc;
@@ -41,9 +42,59 @@ public class AuthControllerTest {
     private OTPService otpService;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private AuthenticationService authenticationService;
     @Autowired
     private JwtService jwtService;
+
+
+
+    @Test
+    @SqlGroup(
+            {
+                    @Sql(scripts = "/sql/createUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD),
+
+                    @Sql(scripts = "/sql/truncateUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+            }
+    )
+    public void resetPasswordSuccessful() throws Exception {
+        final String MOCK_EMAIL = "some@gmail.com";
+        final String MOCK_PASSWORD = "password";
+        final String MOCK_NEW_PASSWORD = "new_password";
+        var loginRequest = LoginRequest.builder().email(MOCK_EMAIL)
+                .password(MOCK_PASSWORD).build();
+
+        authenticationService.login(loginRequest);
+
+        OTPToken[] otpToken = new OTPToken[1];
+
+        assertThatCode(() ->
+                otpToken[0] = otpService.getOtpTokenByUser(userService.getUserByEmail(MOCK_EMAIL))
+        ).doesNotThrowAnyException();
+
+        ResetPassword resetRequest = ResetPassword.builder()
+                .newPassword(MOCK_NEW_PASSWORD)
+                .email(MOCK_EMAIL)
+                .otp(otpToken[0].getOtp())
+                .build();
+
+        String requestBody = objectMapper.writeValueAsString(resetRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)).andExpect(status().isOk());
+
+        assertThat(passwordEncoder.matches(
+                    MOCK_NEW_PASSWORD,
+                    userService.getUserByEmail(MOCK_EMAIL).getPassword()
+                )
+        ).isTrue();
+        
+    }
 
 
     @Test

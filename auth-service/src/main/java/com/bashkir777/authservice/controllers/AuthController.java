@@ -7,6 +7,7 @@ import com.bashkir777.authservice.services.enums.Role;
 import com.bashkir777.authservice.services.exceptions.OTPExpired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,29 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(authenticationService.refresh(refreshTokenDTO));
     }
+
+    @GetMapping("/send-otp/{email}")
+    public ResponseEntity<OperationInfo> sendOtpForPasswordReset(@Email @PathVariable String email)
+            throws BadCredentialsException, JsonProcessingException {
+        authenticationService.sendConfirmationMessage(ConfirmationMessage.builder()
+                .email(email)
+                .build());
+        return ResponseEntity.status(HttpStatus.OK).body(OperationInfo.builder()
+                        .message("Confirmation code successfully send")
+                        .success(true)
+                .build());
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<OperationInfo> resetPassword(@Valid @RequestBody ResetPassword resetPassword)
+            throws BadCredentialsException, OTPExpired {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                authenticationService.resetPassword(resetPassword)
+        );
+    }
+
+
+
 
     @ExceptionHandler({JWTVerificationException.class, BadCredentialsException.class, OTPExpired.class, JsonProcessingException.class})
     private ResponseEntity<OperationInfo> badCredentials(Exception exception) {
