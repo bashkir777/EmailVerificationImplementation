@@ -1,14 +1,16 @@
 package com.bashkir777.authservice.controllers;
 
 import com.bashkir777.authservice.data.dao.UserService;
-import com.bashkir777.authservice.dto.ConfirmationMessage;
-import com.bashkir777.authservice.dto.OperationInfo;
-import com.bashkir777.authservice.dto.RegisterRequest;
+import com.bashkir777.authservice.dto.*;
+import com.bashkir777.authservice.services.AuthenticationService;
 import com.bashkir777.authservice.services.ConfirmationProducer;
 import com.bashkir777.authservice.services.OTPService;
+import com.bashkir777.authservice.services.enums.Role;
+import com.bashkir777.authservice.services.exceptions.OTPExpired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,33 +21,23 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
-    private final ConfirmationProducer confirmationProducer;
-    private final OTPService otpService;
+    private final AuthenticationService authenticationService;
 
-    @PostMapping("/register")
-    private ResponseEntity<OperationInfo> registerUser(@Valid @RequestBody RegisterRequest registerRequest)
-            throws BadCredentialsException, JsonProcessingException {
-
-        OperationInfo answer = userService.register(registerRequest);
-
-        String otp = otpService.generateOtp();
-
-        otpService.saveOtpToken(registerRequest.getEmail(), otp);
-
-        confirmationProducer.produceMessage(
-                ConfirmationMessage.builder()
-                        .email(registerRequest.getEmail())
-                        .firstname(registerRequest.getFirstname())
-                        .otp(otp)
-                        .build()
-        );
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(answer);
+    @PostMapping("/verify-otp")
+    public ResponseEntity<TokenPair> verifyOtp(@Valid @RequestBody VerificationRequest verificationRequest)
+            throws OTPExpired {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(authenticationService.verifyOtp(verificationRequest, Role.USER));
     }
 
-    @ExceptionHandler({BadCredentialsException.class, JsonProcessingException.class})
+    @PostMapping("/register")
+    public ResponseEntity<OperationInfo> registerUser(@Valid @RequestBody RegisterRequest registerRequest)
+            throws BadCredentialsException, JsonProcessingException {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authenticationService.register(registerRequest));
+    }
+
+    @ExceptionHandler({BadCredentialsException.class, OTPExpired.class, JsonProcessingException.class})
     private ResponseEntity<OperationInfo> badCredentials(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(OperationInfo.builder().success(false)

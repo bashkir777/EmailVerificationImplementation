@@ -6,10 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class TokenPair {
-    private String refreshToken;
-    private String accessToken;
+public class VerificationRequest {
+    private String otp;
+    private String email;
 }

@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.bashkir777.authservice.dto.TokenPair;
 import com.bashkir777.authservice.services.enums.Role;
 import com.bashkir777.authservice.services.enums.TokenType;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,12 @@ public class JwtService {
                 .sign(algorithm);
     }
 
+    public TokenPair createTokenPair(String email, Role role){
+        return TokenPair.builder()
+                .accessToken(createJwt(email, TokenType.ACCESS, role))
+                .refreshToken(createJwt(email, TokenType.REFRESH, role))
+                .build();
+    }
     public DecodedJWT decodeAndValidateToken(String jwt) throws JWTVerificationException {
         return JWT.require(algorithm)
                 .withIssuer("auth-service")

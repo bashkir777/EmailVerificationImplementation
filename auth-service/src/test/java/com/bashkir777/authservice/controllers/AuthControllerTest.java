@@ -1,7 +1,12 @@
 package com.bashkir777.authservice.controllers;
 
 import com.bashkir777.authservice.data.dao.UserService;
+import com.bashkir777.authservice.data.entities.OTPToken;
 import com.bashkir777.authservice.dto.RegisterRequest;
+import com.bashkir777.authservice.dto.TokenPair;
+import com.bashkir777.authservice.dto.VerificationRequest;
+import com.bashkir777.authservice.services.AuthenticationService;
+import com.bashkir777.authservice.services.JwtService;
 import com.bashkir777.authservice.services.OTPService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -10,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -30,6 +36,51 @@ public class AuthControllerTest {
     @Autowired
     private OTPService otpService;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+    @Autowired
+    private JwtService jwtService;
+
+    @Test
+    public void otpVerificationSuccessful() throws Exception {
+        final String MOCK_EMAIL = "some@gmail.com";
+        var registerRequest = RegisterRequest.builder().email(MOCK_EMAIL)
+                .password("password")
+                .firstname("firstname")
+                .lastname("lastname").build();
+        authenticationService.register(registerRequest);
+
+        OTPToken otpToken = otpService.getOtpTokenByUser(
+                userService.getUserByEmail(MOCK_EMAIL)
+        );
+
+        var verificationRequest = VerificationRequest.builder().email(MOCK_EMAIL)
+                .otp(otpToken.getOtp()).build();
+
+        String requestBody = objectMapper.writeValueAsString(verificationRequest);
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)).andExpect(status().isOk()).andReturn();
+
+        TokenPair[] tokenPair = new TokenPair[1];
+
+        assertThatCode(() ->
+                tokenPair[0] = objectMapper.readValue(
+                        mvcResult.getResponse().getContentAsString(), TokenPair.class)
+        ).doesNotThrowAnyException();
+
+
+        assertThatCode(() ->
+                jwtService.decodeAndValidateToken(tokenPair[0].getAccessToken())
+        ).doesNotThrowAnyException();
+
+        assertThatCode(() ->
+                jwtService.decodeAndValidateToken(tokenPair[0].getRefreshToken())
+        ).doesNotThrowAnyException();
+
+    }
+
     @Test
     public void userSuccessfullyRegisteredAndOtpSaved() throws Exception {
         final String MOCK_EMAIL = "some@gmail.com";
@@ -47,7 +98,7 @@ public class AuthControllerTest {
 
         assertThatCode(() -> userService.getUserByEmail(MOCK_EMAIL))
                 .doesNotThrowAnyException();
-        assertThatCode(()-> otpService
+        assertThatCode(() -> otpService
                 .getOtpTokenByUser(userService.getUserByEmail(MOCK_EMAIL))
         ).doesNotThrowAnyException();
     }
