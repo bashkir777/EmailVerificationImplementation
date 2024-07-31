@@ -93,7 +93,7 @@ public class AuthControllerTest {
                     userService.getUserByEmail(MOCK_EMAIL).getPassword()
                 )
         ).isTrue();
-        
+
     }
 
 
