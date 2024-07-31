@@ -17,7 +17,7 @@ import java.util.Date;
 @Builder
 public class OTPToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @OneToOne

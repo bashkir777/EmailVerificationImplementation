@@ -4,7 +4,6 @@ import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
 import com.bashkir777.authservice.data.entities.User;
 import com.bashkir777.authservice.data.repositories.OTPTokenRepository;
-import com.bashkir777.authservice.services.exceptions.OTPExpired;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;

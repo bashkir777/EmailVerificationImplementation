@@ -2,6 +2,7 @@ package com.bashkir777.authservice.controllers;
 
 import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
+import com.bashkir777.authservice.dto.LoginRequest;
 import com.bashkir777.authservice.dto.RegisterRequest;
 import com.bashkir777.authservice.dto.TokenPair;
 import com.bashkir777.authservice.dto.VerificationRequest;
@@ -14,10 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,6 +44,40 @@ public class AuthControllerTest {
     private AuthenticationService authenticationService;
     @Autowired
     private JwtService jwtService;
+
+
+    @Test
+    @SqlGroup(
+            {
+                @Sql(scripts = "/sql/createUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD),
+
+                @Sql(scripts = "/sql/truncateUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+            }
+    )
+    public void loginSuccessful() throws Exception {
+        final String MOCK_EMAIL = "some@gmail.com";
+        final String MOCK_PASSWORD = "password";
+
+        var loginRequest = LoginRequest.builder().email(MOCK_EMAIL)
+                .password(MOCK_PASSWORD).build();
+
+        String requestBody = objectMapper.writeValueAsString(loginRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)).andExpect(status().isOk());
+
+        OTPToken[] otpToken = new OTPToken[1];
+
+        assertThatCode(() ->
+                otpToken[0] = otpService.getOtpTokenByUser(userService.getUserByEmail(MOCK_EMAIL))
+        ).doesNotThrowAnyException();
+
+        assertThat(otpToken[0].getOtp()).hasSize(6);
+
+    }
 
     @Test
     public void otpVerificationSuccessful() throws Exception {

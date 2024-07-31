@@ -1,16 +1,12 @@
 package com.bashkir777.authservice.controllers;
 
-import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.dto.*;
 import com.bashkir777.authservice.services.AuthenticationService;
-import com.bashkir777.authservice.services.ConfirmationProducer;
-import com.bashkir777.authservice.services.OTPService;
 import com.bashkir777.authservice.services.enums.Role;
 import com.bashkir777.authservice.services.exceptions.OTPExpired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -36,6 +32,15 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authenticationService.register(registerRequest));
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<OperationInfo> loginRequest(@Valid @RequestBody LoginRequest loginRequest)
+            throws BadCredentialsException, JsonProcessingException {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(authenticationService.login(loginRequest));
+    }
+
+
 
     @ExceptionHandler({BadCredentialsException.class, OTPExpired.class, JsonProcessingException.class})
     private ResponseEntity<OperationInfo> badCredentials(Exception exception) {

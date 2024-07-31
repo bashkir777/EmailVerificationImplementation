@@ -2,6 +2,7 @@ package com.bashkir777.authservice.services;
 
 import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
+import com.bashkir777.authservice.data.entities.User;
 import com.bashkir777.authservice.dto.*;
 import com.bashkir777.authservice.services.enums.Role;
 import com.bashkir777.authservice.services.exceptions.OTPExpired;
@@ -56,5 +57,30 @@ public class AuthenticationService {
         }
 
         return jwtService.createTokenPair(verificationRequest.getEmail(), role);
+    }
+
+    public OperationInfo login(LoginRequest loginRequest)
+            throws BadCredentialsException, JsonProcessingException {
+        User user = userService.getUserByEmail(
+                loginRequest.getEmail()
+        );
+
+        if(!user.getPassword().equals(loginRequest.getPassword())){
+            throw new BadCredentialsException("Invalid password");
+        }
+        String otp = otpService.generateOtp();
+
+        otpService.saveOtpToken(loginRequest.getEmail(), otp);
+
+        confirmationProducer.produceMessage(
+                ConfirmationMessage.builder()
+                        .email(user.getEmail())
+                        .firstname(user.getFirstname())
+                        .otp(otp)
+                        .build()
+        );
+        return OperationInfo.builder()
+                .message("Email containing verification code has been send")
+                .success(true).build();
     }
 }

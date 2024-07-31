@@ -1,0 +1,1 @@
+TRUNCATE _user CASCADE;
