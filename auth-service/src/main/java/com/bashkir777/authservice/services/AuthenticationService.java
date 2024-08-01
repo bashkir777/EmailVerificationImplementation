@@ -72,10 +72,13 @@ public class AuthenticationService {
         return otpInDB.getUser();
     }
 
+    @Transactional
     public TokenPair verifyOtp(VerificationRequest verificationRequest, Role role)
             throws OTPExpired, BadCredentialsException{
 
         User user = validateOtpAndGetUser(verificationRequest.getEmail(), verificationRequest.getOtp());
+
+        user.setDisabled(false);
 
         TokenPair answer = jwtService.createTokenPair(verificationRequest.getEmail(), role);
 
@@ -94,6 +97,10 @@ public class AuthenticationService {
         User user = userService.getUserByEmail(
                 loginRequest.getEmail()
         );
+
+        if(user.getDisabled()){
+            throw new BadCredentialsException("You should verify your email first");
+        }
 
         if(!user.getPassword().equals(loginRequest.getPassword())){
             throw new BadCredentialsException("Invalid password");
