@@ -1,8 +1,9 @@
 import React from 'react';
 import {MDBInput, MDBBtn} from 'mdb-react-ui-kit';
-import {Providers} from "../tools/consts";
+import {Providers} from "../../tools/consts";
 
 const LoginForm = ({setProvider}) => {
+
     return (
         <>
             <section className="vh-100 gradient-custom">

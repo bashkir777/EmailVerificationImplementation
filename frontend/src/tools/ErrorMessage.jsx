@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/error-message.css'
+import '../css/error-message.css'
 const ErrorMessage = ({message, onClose}) => {
     return (
         <div className="alert alert-danger alert-dismissible fade show error-message" role="alert">

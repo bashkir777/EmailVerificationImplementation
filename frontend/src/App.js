@@ -1,4 +1,4 @@
-import LoginForm from "./components/LoginForm";
+import LoginForm from "./components/forms/LoginForm";
 import {useState} from "react";
 import {Providers} from "./tools/consts";
 import LoginProvider from "./components/providers/LoginProvider";

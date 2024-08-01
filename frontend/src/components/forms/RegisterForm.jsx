@@ -1,8 +1,14 @@
 import React from 'react';
 import {MDBBtn, MDBInput} from "mdb-react-ui-kit";
-import {Providers} from "../../tools/consts";
+import {Providers, RegisterFlow} from "../../tools/consts";
 
-const RegisterForm = ({setProvider}) => {
+const RegisterForm = ({setProvider, setFlow}) => {
+
+    const nextHandler = () => {
+        //send register request + if response is 200 go to email verification
+        setFlow(RegisterFlow.EmailVerification)
+    }
+
     return (
 
         <>
@@ -36,7 +42,7 @@ const RegisterForm = ({setProvider}) => {
                                         </div>
 
                                         <MDBBtn outline className="btn btn-outline-light btn-lg px-5 mt-3"
-                                                type="submit">Next</MDBBtn>
+                                                type="submit" onClick={nextHandler}>Next</MDBBtn>
                                     </div>
                                     <div>
                                         <p className="mb-0">Want to go back to login form? <a href="#!"
