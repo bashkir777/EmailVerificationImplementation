@@ -1,17 +1,43 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {MDBBtn, MDBInput} from "mdb-react-ui-kit";
-import {Providers, RegisterFlow} from "../../tools/consts";
+import {Providers, REGISTER_URL, RegisterFlow} from "../../tools/consts";
+import ErrorMessage from "../../tools/ErrorMessage";
 
-const RegisterForm = ({setProvider, setFlow}) => {
+const RegisterForm = ({setProvider, setFlow, userData, setEmail, setPassword, setFirstname, setLastname}) => {
+
+    const [error, setError] = useState(false);
+    const [message, setMessage] = useState('');
 
     const nextHandler = () => {
-        //send register request + if response is 200 go to email verification
-        setFlow(RegisterFlow.EmailVerification)
+        if (userData.email.length === 0 || userData.password.length === 0
+            || userData.firstname.length === 0 || userData.lastname.length === 0) {
+            setError(true);
+            setMessage("Please fill into all fields");
+            return;
+        }
+        fetch(REGISTER_URL, {
+            method: "POST",
+            body: JSON.stringify(userData),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => response.json())
+            .then(data =>{
+                if(data.success){
+                    setFlow(RegisterFlow.EmailVerification);
+                }else{
+                    setError(true);
+                    setError(data.description);
+                }
+            })
     }
 
     return (
 
         <>
+            {error && <ErrorMessage message={message} onClose={() => {
+                setError(false);
+            }}/>}
             <section className="vh-100 gradient-custom">
                 <div className="container py-5 h-100">
                     <div className="row d-flex justify-content-center align-items-center h-100">
@@ -25,19 +51,23 @@ const RegisterForm = ({setProvider, setFlow}) => {
                                         <p className="text-white-50 mb-4">Please fill into all fields!</p>
 
                                         <div className="form-outline form-white mb-4">
-                                            <MDBInput type="email" id="typeEmailX" label="Email"
+                                            <MDBInput onChange={(event) => setEmail(event.target.value)} type="email"
+                                                      id="typeEmailX" label="Email"
                                                       className="form-control form-control-lg"/>
                                         </div>
                                         <div className="form-outline form-white mb-4">
-                                            <MDBInput type="password" id="typePasswordX" label="Password"
+                                            <MDBInput onChange={(event) => setPassword(event.target.value)}
+                                                      type="password" id="typePasswordX" label="Password"
                                                       className="form-control form-control-lg"/>
                                         </div>
                                         <div className="form-outline form-white mb-4">
-                                            <MDBInput type="text" id="typeFirstnameX" label="Firstname"
+                                            <MDBInput onChange={(event) => setFirstname(event.target.value)} type="text"
+                                                      id="typeFirstnameX" label="Firstname"
                                                       className="form-control form-control-lg"/>
                                         </div>
                                         <div className="form-outline form-white mb-4">
-                                            <MDBInput type="text" id="typeLastnameX" label="Lastname"
+                                            <MDBInput onChange={(event) => setLastname(event.target.value)} type="text"
+                                                      id="typeLastnameX" label="Lastname"
                                                       className="form-control form-control-lg"/>
                                         </div>
 

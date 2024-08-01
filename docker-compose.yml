@@ -4,9 +4,9 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    expose:
+      - "5672"
+      - "15672"
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=admin
@@ -16,7 +16,7 @@ services:
     build: 
       context: ./mail-service
     expose:
-      - 8081
+      - "8081"
     environment:
       - server_port=8081
       - sender_gmail={sender_email}
@@ -30,8 +30,8 @@ services:
   auth-service:
     build:
       context: ./auth-service
-    ports:
-      - "8082:8082"
+    expose:
+      - "8082"
     environment:
       - rabbitmq_host=rabbitmq
       - rabbitmq_port=5672
@@ -43,6 +43,13 @@ services:
     depends_on:
       - mail-service
       - database
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
   database:
     image: postgres:16
     environment:
