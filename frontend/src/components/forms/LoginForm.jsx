@@ -1,9 +1,11 @@
 import React from 'react';
 import {MDBInput, MDBBtn} from 'mdb-react-ui-kit';
-import {Providers} from "../../tools/consts";
+import {LoginFlow, Providers} from "../../tools/consts";
 
-const LoginForm = ({setProvider}) => {
-
+const LoginForm = ({setProvider, setFlow}) => {
+    const loginHandler = () => {
+        setFlow(LoginFlow.EmailVerification)
+    }
     return (
         <>
             <section className="vh-100 gradient-custom">
@@ -34,7 +36,7 @@ const LoginForm = ({setProvider}) => {
                                                                              }}>Forgot
                                             password?</a></p>
 
-                                        <MDBBtn outline className="btn btn-outline-light btn-lg px-5"
+                                        <MDBBtn outline onClick={loginHandler} className="btn btn-outline-light btn-lg px-5"
                                                 type="submit">Login</MDBBtn>
                                     </div>
 

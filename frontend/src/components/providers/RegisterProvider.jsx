@@ -10,7 +10,8 @@ const RegisterProvider = ({setProvider, setAuthenticated}) => {
             {flow === RegisterFlow.RegisterForm
                 && <RegisterForm setProvider={setProvider} setFlow={setFlow}/>}
             {flow === RegisterFlow.EmailVerification
-                && <EmailVerificationForm setAuthenticated={setAuthenticated}/>}
+                && <EmailVerificationForm setAuthenticated={setAuthenticated}
+                                          cancelHandler={()=>setFlow(RegisterFlow.RegisterForm)}/>}
         </>
     );
 };

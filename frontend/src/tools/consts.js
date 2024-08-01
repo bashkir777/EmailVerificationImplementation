@@ -8,6 +8,11 @@ export const RegisterFlow = {
     EmailVerification: 'email-verification'
 }
 
+export const LoginFlow = {
+    LoginForm: 'login-form',
+    EmailVerification: 'email-verification'
+}
+
 
 const AUTH_URL = '/api/v1/auth';
 export const LOGIN_URL = AUTH_URL + '/login'

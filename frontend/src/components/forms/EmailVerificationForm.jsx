@@ -1,8 +1,9 @@
 import React, {useEffect, useState, useRef} from 'react';
 import ErrorMessage from "../../tools/ErrorMessage";
 import {MDBBtn} from "mdb-react-ui-kit";
+import {RegisterFlow} from "../../tools/consts";
 
-const EmailVerificationForm = () => {
+const EmailVerificationForm = ({cancelHandler}) => {
     const [otp, setOtp] = useState(new Array(6).fill(""));
     const inputRefs = useRef([]);
     const digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -98,7 +99,7 @@ const EmailVerificationForm = () => {
                     </div>
                     <div className="row">
                         <MDBBtn outline className=" col btn btn-outline-danger btn-lg px-5 mt-5 offset-1 col-4"
-                                type="submit" onClick={submitHandler}>Cancel</MDBBtn>
+                                type="submit" onClick={cancelHandler}>Cancel</MDBBtn>
                         <MDBBtn outline className=" col btn btn-outline-light btn-lg px-5 mt-5 offset-2 col-4"
                                 type="submit" onClick={submitHandler}>Submit</MDBBtn>
                     </div>
