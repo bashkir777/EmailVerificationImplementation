@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -27,6 +28,7 @@ public class AuthenticationService {
     private final ConfirmationProducer confirmationProducer;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final PasswordEncoder passwordEncoder;
 
     public void sendConfirmationMessage(ConfirmationMessage confirmationMessage)
             throws JsonProcessingException, BadCredentialsException {
@@ -72,13 +74,10 @@ public class AuthenticationService {
         return otpInDB.getUser();
     }
 
-    @Transactional
     public TokenPair verifyOtp(VerificationRequest verificationRequest, Role role)
             throws OTPExpired, BadCredentialsException{
 
         User user = validateOtpAndGetUser(verificationRequest.getEmail(), verificationRequest.getOtp());
-
-        user.setDisabled(false);
 
         TokenPair answer = jwtService.createTokenPair(verificationRequest.getEmail(), role);
 
@@ -98,13 +97,10 @@ public class AuthenticationService {
                 loginRequest.getEmail()
         );
 
-        if(user.getDisabled()){
-            throw new BadCredentialsException("You should verify your email first");
-        }
-
-        if(!user.getPassword().equals(loginRequest.getPassword())){
+        if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
             throw new BadCredentialsException("Invalid password");
         }
+
         String otp = otpService.generateOtp();
 
         otpService.saveOtpToken(loginRequest.getEmail(), otp);

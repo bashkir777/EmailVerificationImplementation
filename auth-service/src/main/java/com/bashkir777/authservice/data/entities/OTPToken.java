@@ -21,7 +21,7 @@ public class OTPToken {
     private Integer id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(referencedColumnName = "id", name = "user_id")
     private User user;
 
     @Length(min = 6, max = 6)

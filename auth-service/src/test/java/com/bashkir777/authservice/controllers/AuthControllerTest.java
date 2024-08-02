@@ -54,7 +54,7 @@ public class AuthControllerTest {
     @Test
     @SqlGroup(
             {
-                    @Sql(scripts = "/sql/createUser.sql"
+                    @Sql(scripts = "/sql/createEnabledUser.sql"
                             , executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD),
 
                     @Sql(scripts = "/sql/truncateUser.sql"
@@ -100,7 +100,7 @@ public class AuthControllerTest {
     @Test
     @SqlGroup(
             {
-                @Sql(scripts = "/sql/createUser.sql"
+                @Sql(scripts = "/sql/createEnabledUser.sql"
                             , executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD),
 
                 @Sql(scripts = "/sql/truncateUser.sql"

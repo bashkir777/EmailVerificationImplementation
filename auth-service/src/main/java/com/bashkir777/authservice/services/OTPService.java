@@ -15,11 +15,18 @@ import java.util.Random;
 public class OTPService {
 
     private final OTPTokenRepository otpTokenRepository;
-    private final UserService userService;
+
+    private UserService userService;
+
     private final long OTP_TIME_ALIVE_MILLIS = 2 * 60 * 1000;
+
     @Autowired
-    public OTPService(OTPTokenRepository otpTokenRepository, UserService userService){
+    public OTPService(OTPTokenRepository otpTokenRepository){
         this.otpTokenRepository = otpTokenRepository;
+    }
+
+    @Autowired
+    public void setUserService(UserService userService){
         this.userService = userService;
     }
 
@@ -48,5 +55,9 @@ public class OTPService {
     public OTPToken getOtpTokenByUser(User user) throws BadCredentialsException{
         return otpTokenRepository.findByUser(user)
                 .orElseThrow(()-> new BadCredentialsException("OTP not found"));
+    }
+
+    public void deleteOtpTokenByUser(User user) throws BadCredentialsException{
+        otpTokenRepository.deleteOTPTokenByUser(user);
     }
 }

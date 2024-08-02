@@ -20,6 +20,6 @@ public class RefreshToken {
 
     private String refreshToken;
 
-    @OneToOne(mappedBy = "refreshToken")
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "refreshToken")
     private User user;
 }
