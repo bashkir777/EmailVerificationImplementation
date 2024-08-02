@@ -30,12 +30,17 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
 
-    public void sendConfirmationMessage(ConfirmationMessage confirmationMessage)
+    public void sendConfirmationMessage(String email)
             throws JsonProcessingException, BadCredentialsException {
-        userService.getUserByEmail(confirmationMessage.getEmail());
-        otpService.saveOtpToken(confirmationMessage.getEmail()
-                , otpService.generateOtp());
-        confirmationProducer.produceMessage(confirmationMessage);
+        User user = userService.getUserByEmail(email);
+        String otp = otpService.generateOtp();
+        otpService.saveOtpToken(email
+                , otp);
+        confirmationProducer.produceMessage(ConfirmationMessage.builder()
+                        .firstname(user.getFirstname())
+                        .email(email)
+                        .otp(otp)
+                .build());
     }
 
 
@@ -60,7 +65,7 @@ public class AuthenticationService {
     }
 
     @Transactional
-    private User validateOtpAndGetUser(String email, String otp)
+    public User validateOtpAndGetUser(String email, String otp)
             throws OTPExpired, BadCredentialsException {
         OTPToken otpInDB = otpService.getOtpTokenByUser(
                 userService.getUserByEmail(email)
@@ -76,14 +81,9 @@ public class AuthenticationService {
 
         return otpInDB.getUser();
     }
-
     @Transactional
-    public TokenPair verifyOtp(VerificationRequest verificationRequest, Role role)
-            throws OTPExpired, BadCredentialsException {
-
-        User user = validateOtpAndGetUser(verificationRequest.getEmail(), verificationRequest.getOtp());
-
-        TokenPair answer = jwtService.createTokenPair(verificationRequest.getEmail(), role);
+    public TokenPair createTokenPairAndSaveRefreshToken(User user){
+        TokenPair answer = jwtService.createTokenPair(user.getEmail(), user.getRole());
 
         refreshTokenService.saveRefreshToken(
                 RefreshToken.builder()
@@ -91,8 +91,16 @@ public class AuthenticationService {
                         .user(user)
                         .build()
         );
-
         return answer;
+    }
+
+    @Transactional
+    public TokenPair verifyOtp(VerificationRequest verificationRequest, Role role)
+            throws OTPExpired, BadCredentialsException {
+
+        User user = validateOtpAndGetUser(verificationRequest.getEmail(), verificationRequest.getOtp());
+
+        return createTokenPairAndSaveRefreshToken(user);
     }
 
     @Transactional
@@ -155,15 +163,14 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public OperationInfo resetPassword(ResetPassword resetPassword)
+    public TokenPair resetPassword(ResetPassword resetPassword)
             throws OTPExpired, BadCredentialsException {
         User user = validateOtpAndGetUser(
                 resetPassword.getEmail(), resetPassword.getOtp()
         );
+
         user.setPassword(resetPassword.getNewPassword());
-        return OperationInfo.builder()
-                .success(true)
-                .message("Password has been changed successfully")
-                .build();
+
+        return createTokenPairAndSaveRefreshToken(user);
     }
 }

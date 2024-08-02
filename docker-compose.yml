@@ -19,7 +19,7 @@ services:
       - "8081"
     environment:
       - server_port=8081
-      - sender_gmail={sender_gmail}
+      - sender_gmail={sender_email}
       - sender_app_password={app_password}
       - rabbitmq_host=rabbitmq
       - rabbitmq_port=5672

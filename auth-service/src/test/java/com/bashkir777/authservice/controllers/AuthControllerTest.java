@@ -90,9 +90,15 @@ public class AuthControllerTest {
 
         String requestBody = objectMapper.writeValueAsString(resetRequest);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/reset-password")
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/reset-password")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)).andExpect(status().isOk());
+                .content(requestBody)).andExpect(status().isOk()).andReturn();
+
+
+        TokenPair tokenPair = objectMapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                TokenPair.class
+        );
 
         assertThat(passwordEncoder.matches(
                     MOCK_NEW_PASSWORD,
@@ -100,6 +106,11 @@ public class AuthControllerTest {
                 )
         ).isTrue();
 
+        assertThatCode(() -> {
+                jwtService.decodeAndValidateToken(tokenPair.getRefreshToken());
+                jwtService.decodeAndValidateToken(tokenPair.getAccessToken());
+        }
+        ).doesNotThrowAnyException();
     }
 
 

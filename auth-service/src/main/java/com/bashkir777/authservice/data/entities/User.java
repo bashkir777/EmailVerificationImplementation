@@ -2,6 +2,7 @@ package com.bashkir777.authservice.data.entities;
 
 
 import com.bashkir777.authservice.data.tools.PasswordConverter;
+import com.bashkir777.authservice.services.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -23,6 +24,9 @@ public class User {
 
     @Convert(converter = PasswordConverter.class)
     private String password;
+
+    @Enumerated(value = EnumType.STRING)
+    private Role role;
 
     @Email
     @Column(unique = true)

@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import RegisterForm from "../forms/RegisterForm";
-import {RegisterFlow} from "../../tools/consts";
+import {RegisterFlow, VERIFY_OTP_URL} from "../../tools/consts";
 import EmailVerificationForm from "../forms/EmailVerificationForm";
 
 const RegisterProvider = ({setProvider, setAuthenticated}) => {
@@ -55,7 +55,7 @@ const RegisterProvider = ({setProvider, setAuthenticated}) => {
                 <RegisterForm setProvider={setProvider} userData={userData} setFlow={setFlow} setEmail={setEmail} setPassword={setPassword}
                               setFirstname={setFirstname} setLastname={setLastname}/>}
             {flow === RegisterFlow.EmailVerification
-                && <EmailVerificationForm userData={userData} setAuthenticated={setAuthenticated}
+                && <EmailVerificationForm URL={VERIFY_OTP_URL} userData={{email: userData.email}} setAuthenticated={setAuthenticated}
                                           cancelHandler={() => setFlow(RegisterFlow.RegisterForm)}/>}
         </>
     );

@@ -3,7 +3,7 @@ import {MDBBtn} from "mdb-react-ui-kit";
 import ErrorMessage from "../../tools/ErrorMessage";
 import {LOGOUT_URL} from "../../tools/consts";
 
-const Logout = ({setAuthenticated}) => {
+const Logout = ({backToLogin}) => {
     const [error, setError] = useState(false);
     const [message, setMessage] = useState('');
     const logoutHandler = () => {
@@ -29,7 +29,7 @@ const Logout = ({setAuthenticated}) => {
             }).finally(() => {
             localStorage.removeItem("refreshToken");
             localStorage.removeItem("accessToken");
-            setAuthenticated(false);
+            backToLogin()
         })
 
 

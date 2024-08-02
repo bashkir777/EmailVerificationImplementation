@@ -5,6 +5,7 @@ import com.bashkir777.authservice.data.repositories.UserRepository;
 import com.bashkir777.authservice.dto.OperationInfo;
 import com.bashkir777.authservice.dto.RegisterRequest;
 import com.bashkir777.authservice.services.OTPService;
+import com.bashkir777.authservice.services.enums.Role;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ public class UserService {
     public OperationInfo register(RegisterRequest registerRequest) throws BadCredentialsException {
 
         User user = User.builder().email(registerRequest.getEmail())
+                .role(Role.USER)
                 .password(registerRequest.getPassword())
                 .firstname(registerRequest.getFirstname())
                 .lastname(registerRequest.getLastname())

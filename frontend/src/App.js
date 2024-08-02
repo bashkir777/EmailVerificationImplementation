@@ -6,7 +6,7 @@ import ChangePasswordProvider from "./components/providers/ChangePasswordProvide
 import Logout from "./components/forms/Logout";
 
 function App() {
-    const[authenticated, setAuthenticated] = useState(false);
+    const [authenticated, setAuthenticated] = useState(false);
     const [provider, setProvider] = useState(Providers.LoginProvider);
     return (
         <>
@@ -20,8 +20,15 @@ function App() {
                                      setAuthenticated={setAuthenticated}/>}
             {!authenticated
                 && provider === Providers.ChangePasswordProvider
-                && <ChangePasswordProvider setProvider={setProvider}/>}
-            {authenticated && <Logout setAuthenticated={setAuthenticated}/>}
+                && <ChangePasswordProvider setProvider={setProvider} setAuthenticated={setAuthenticated}
+                                           backToLogin={() => {
+                                               setAuthenticated(false);
+                                               setProvider(Providers.LoginProvider);
+                                           }}/>}
+            {authenticated && <Logout backToLogin={() => {
+                setAuthenticated(false);
+                setProvider(Providers.LoginProvider);
+            }}/>}
         </>
     );
 }

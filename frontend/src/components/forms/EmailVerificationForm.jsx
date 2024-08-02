@@ -1,10 +1,10 @@
 import React, {useEffect, useState, useRef} from 'react';
 import ErrorMessage from "../../tools/ErrorMessage";
 import {MDBBtn} from "mdb-react-ui-kit";
-import {VERIFY_OTP_URL} from "../../tools/consts";
+import {asyncPostRequest} from "../../tools/functions";
 
 
-const EmailVerificationForm = ({cancelHandler, userData, setAuthenticated}) => {
+const EmailVerificationForm = ({URL, cancelHandler, userData, setAuthenticated}) => {
     const [otp, setOtp] = useState(new Array(6).fill(""));
     const inputRefs = useRef([]);
     const digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -40,16 +40,7 @@ const EmailVerificationForm = ({cancelHandler, userData, setAuthenticated}) => {
             setErrorMessage("The code is not fully entered");
             return;
         }
-        fetch(VERIFY_OTP_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                email: userData.email,
-                otp: otpToString()
-            }),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }).then(response => {
+        asyncPostRequest({...userData, otp: otpToString()}, URL).then(response => {
             if(response.status !== 200){
                 setError(true);
                 setErrorMessage("The code is invalid. Please try again");

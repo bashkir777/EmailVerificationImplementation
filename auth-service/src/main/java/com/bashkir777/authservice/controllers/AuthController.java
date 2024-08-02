@@ -61,9 +61,7 @@ public class AuthController {
     @GetMapping("/send-otp/{email}")
     public ResponseEntity<OperationInfo> sendOtpForPasswordReset(@Email @PathVariable String email)
             throws BadCredentialsException, JsonProcessingException {
-        authenticationService.sendConfirmationMessage(ConfirmationMessage.builder()
-                .email(email)
-                .build());
+        authenticationService.sendConfirmationMessage(email);
         return ResponseEntity.status(HttpStatus.OK).body(OperationInfo.builder()
                         .message("Confirmation code successfully send")
                         .success(true)
@@ -71,7 +69,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<OperationInfo> resetPassword(@Valid @RequestBody ResetPassword resetPassword)
+    public ResponseEntity<TokenPair> resetPassword(@Valid @RequestBody ResetPassword resetPassword)
             throws BadCredentialsException, OTPExpired {
         return ResponseEntity.status(HttpStatus.OK).body(
                 authenticationService.resetPassword(resetPassword)

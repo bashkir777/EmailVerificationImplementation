@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import LoginForm from "../forms/LoginForm";
-import {LoginFlow} from "../../tools/consts";
+import {LoginFlow, VERIFY_OTP_URL} from "../../tools/consts";
 import EmailVerificationForm from "../forms/EmailVerificationForm";
 
 const LoginProvider = ({setProvider, setAuthenticated}) => {
@@ -36,7 +36,8 @@ const LoginProvider = ({setProvider, setAuthenticated}) => {
                 <LoginForm setEmail={setEmail} setPassword={setPassword} userData={userData} setFlow={setFlow}
                            setProvider={setProvider}/>}
             {flow === LoginFlow.EmailVerification &&
-                <EmailVerificationForm setAuthenticated={setAuthenticated} userData={userData} cancelHandler={
+                <EmailVerificationForm URL={VERIFY_OTP_URL} userData={{email: userData.email}}
+                                       setAuthenticated={setAuthenticated} cancelHandler={
                     () => setFlow(LoginFlow.LoginForm)
                 }/>}
         </>
