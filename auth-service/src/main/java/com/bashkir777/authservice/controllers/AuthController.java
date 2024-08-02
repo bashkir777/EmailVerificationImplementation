@@ -29,24 +29,33 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<OperationInfo> registerUser(@Valid @RequestBody RegisterRequest registerRequest)
+    public ResponseEntity<OperationInfo> register(@Valid @RequestBody RegisterRequest registerRequest)
             throws BadCredentialsException, JsonProcessingException {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authenticationService.register(registerRequest));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<OperationInfo> loginRequest(@Valid @RequestBody LoginRequest loginRequest)
+    public ResponseEntity<OperationInfo> login(@Valid @RequestBody LoginRequest loginRequest)
             throws BadCredentialsException, JsonProcessingException {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(authenticationService.login(loginRequest));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AccessToken> registerUser(@RequestBody RefreshTokenDTO refreshTokenDTO)
+    public ResponseEntity<AccessToken> refresh(@RequestBody RefreshTokenDTO refreshTokenDTO)
             throws JWTVerificationException {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(authenticationService.refresh(refreshTokenDTO));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<OperationInfo> logout(@RequestBody RefreshTokenDTO refreshTokenDTO)
+            throws JWTVerificationException, BadCredentialsException {
+        authenticationService.logout(refreshTokenDTO);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(OperationInfo.builder().success(true)
+                        .message("You have logged out successfully").build());
     }
 
     @GetMapping("/send-otp/{email}")
@@ -69,11 +78,9 @@ public class AuthController {
         );
     }
 
-
-
-
     @ExceptionHandler({JWTVerificationException.class, BadCredentialsException.class, OTPExpired.class, JsonProcessingException.class})
     private ResponseEntity<OperationInfo> badCredentials(Exception exception) {
+        exception.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(OperationInfo.builder().success(false)
                         .message(exception.getMessage()).build());

@@ -1,14 +1,13 @@
 import React, {useEffect, useState, useRef} from 'react';
 import ErrorMessage from "../../tools/ErrorMessage";
 import {MDBBtn} from "mdb-react-ui-kit";
-import {RegisterFlow, VERIFY_OTP_URL} from "../../tools/consts";
+import {VERIFY_OTP_URL} from "../../tools/consts";
 
 
 const EmailVerificationForm = ({cancelHandler, userData, setAuthenticated}) => {
     const [otp, setOtp] = useState(new Array(6).fill(""));
     const inputRefs = useRef([]);
     const digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    const [readyToSubmit, setReadyToSubmit] = useState(false);
     const [error, setError] = useState(false);
     const [message, setErrorMessage] = useState('');
 
@@ -59,9 +58,9 @@ const EmailVerificationForm = ({cancelHandler, userData, setAuthenticated}) => {
             }
             return response.json();
         }).then(data => {
+            console.log(data.accessToken);
             localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("refreshToken", data.refreshToken);
-            console.log(data.refreshToken);
             setAuthenticated(true);
         })
     };

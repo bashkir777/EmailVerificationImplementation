@@ -4,11 +4,13 @@ import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
 import com.bashkir777.authservice.data.entities.User;
 import com.bashkir777.authservice.data.repositories.OTPTokenRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -41,15 +43,24 @@ public class OTPService {
         return sb.toString();
     }
 
+    @Transactional
     public void saveOtpToken(String email, String otp) throws BadCredentialsException {
         User user = userService.getUserByEmail(email);
+
+        Optional<OTPToken> optionalOtp = otpTokenRepository.findByUser(user);
+        if(optionalOtp.isPresent()){
+            otpTokenRepository.deleteByUser(user);
+            otpTokenRepository.flush();
+        }
+
         OTPToken otpToken = OTPToken.builder()
                 .user(user)
                 .otp(otp)
                 .expirationDate(new Date(System.currentTimeMillis() + OTP_TIME_ALIVE_MILLIS))
                 .build();
-        otpTokenRepository.deleteOTPTokenByUser(user);
+
         otpTokenRepository.save(otpToken);
+        
     }
 
     public OTPToken getOtpTokenByUser(User user) throws BadCredentialsException{
@@ -58,6 +69,6 @@ public class OTPService {
     }
 
     public void deleteOtpTokenByUser(User user) throws BadCredentialsException{
-        otpTokenRepository.deleteOTPTokenByUser(user);
+        otpTokenRepository.deleteByUser(user);
     }
 }

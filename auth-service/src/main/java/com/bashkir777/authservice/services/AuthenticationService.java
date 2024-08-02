@@ -39,6 +39,7 @@ public class AuthenticationService {
     }
 
 
+    @Transactional
     public OperationInfo register(RegisterRequest registerRequest)
             throws JsonProcessingException, BadCredentialsException {
         OperationInfo answer = userService.register(registerRequest);
@@ -57,25 +58,28 @@ public class AuthenticationService {
 
         return answer;
     }
+
+    @Transactional
     private User validateOtpAndGetUser(String email, String otp)
-            throws OTPExpired, BadCredentialsException{
+            throws OTPExpired, BadCredentialsException {
         OTPToken otpInDB = otpService.getOtpTokenByUser(
                 userService.getUserByEmail(email)
         );
 
-        if((new Date()).after(otpInDB.getExpirationDate())){
+        if ((new Date()).after(otpInDB.getExpirationDate())) {
             throw new OTPExpired();
         }
 
-        if(!otpInDB.getOtp().equals(otp)){
+        if (!otpInDB.getOtp().equals(otp)) {
             throw new BadCredentialsException("Invalid OTP");
         }
 
         return otpInDB.getUser();
     }
 
+    @Transactional
     public TokenPair verifyOtp(VerificationRequest verificationRequest, Role role)
-            throws OTPExpired, BadCredentialsException{
+            throws OTPExpired, BadCredentialsException {
 
         User user = validateOtpAndGetUser(verificationRequest.getEmail(), verificationRequest.getOtp());
 
@@ -91,13 +95,14 @@ public class AuthenticationService {
         return answer;
     }
 
+    @Transactional
     public OperationInfo login(LoginRequest loginRequest)
             throws BadCredentialsException, JsonProcessingException {
         User user = userService.getUserByEmail(
                 loginRequest.getEmail()
         );
 
-        if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
 
@@ -117,12 +122,19 @@ public class AuthenticationService {
                 .success(true).build();
     }
 
-    public AccessToken refresh(RefreshTokenDTO refreshToken) throws JWTVerificationException {
+    @Transactional
+    public AccessToken refresh(RefreshTokenDTO refreshToken)
+            throws JWTVerificationException, BadCredentialsException {
 
         DecodedJWT decodedJWT
                 = jwtService.decodeAndValidateToken(refreshToken.getRefreshToken());
 
         String email = decodedJWT.getSubject();
+
+        refreshTokenService.getRefreshTokenByUser(
+                userService.getUserByEmail(email)
+        );
+
         Role role = Role.valueOf(decodedJWT.getClaim("role").asString());
 
         return AccessToken.builder().accessToken(jwtService
@@ -131,8 +143,20 @@ public class AuthenticationService {
     }
 
     @Transactional
+    public void logout(RefreshTokenDTO refreshToken)
+            throws JWTVerificationException, BadCredentialsException {
+        DecodedJWT decodedJWT
+                = jwtService.decodeAndValidateToken(refreshToken.getRefreshToken());
+
+        String email = decodedJWT.getSubject();
+        refreshTokenService.deleteRefreshTokenByUser(
+            userService.getUserByEmail(email)
+        );
+    }
+
+    @Transactional
     public OperationInfo resetPassword(ResetPassword resetPassword)
-            throws OTPExpired, BadCredentialsException{
+            throws OTPExpired, BadCredentialsException {
         User user = validateOtpAndGetUser(
                 resetPassword.getEmail(), resetPassword.getOtp()
         );

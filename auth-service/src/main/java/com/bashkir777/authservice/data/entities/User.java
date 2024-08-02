@@ -34,10 +34,6 @@ public class User {
     @Size(min=3, max=20)
     private String lastname;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "token_id", referencedColumnName = "id")
-    private RefreshToken refreshToken;
-
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean disabled;
 }

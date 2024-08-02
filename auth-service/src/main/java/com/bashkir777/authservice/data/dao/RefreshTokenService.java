@@ -8,11 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
+    @Transactional
     public RefreshToken getRefreshTokenByUser(User user) throws BadCredentialsException {
         return refreshTokenRepository
                 .getRefreshTokenByUser(user)
@@ -21,12 +24,16 @@ public class RefreshTokenService {
 
     @Transactional
     public void deleteRefreshTokenByUser(User user){
-        refreshTokenRepository.deleteRefreshTokenByUser(user);
+        refreshTokenRepository.deleteByUser(user);
     }
 
     @Transactional
     public void saveRefreshToken(RefreshToken refreshToken){
-        deleteRefreshTokenByUser(refreshToken.getUser());
+        Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository
+                .getRefreshTokenByUser(refreshToken.getUser());
+        if(optionalRefreshToken.isPresent()){
+            deleteRefreshTokenByUser(refreshToken.getUser());
+        }
         refreshTokenRepository.save(refreshToken);
     }
 

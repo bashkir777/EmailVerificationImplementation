@@ -1,7 +1,10 @@
 package com.bashkir777.authservice.controllers;
 
+import com.bashkir777.authservice.data.dao.RefreshTokenService;
 import com.bashkir777.authservice.data.dao.UserService;
 import com.bashkir777.authservice.data.entities.OTPToken;
+import com.bashkir777.authservice.data.entities.RefreshToken;
+import com.bashkir777.authservice.data.entities.User;
 import com.bashkir777.authservice.dto.*;
 import com.bashkir777.authservice.services.AuthenticationService;
 import com.bashkir777.authservice.services.JwtService;
@@ -10,11 +13,13 @@ import com.bashkir777.authservice.services.enums.Role;
 import com.bashkir777.authservice.services.enums.TokenType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
@@ -48,7 +53,8 @@ public class AuthControllerTest {
     private AuthenticationService authenticationService;
     @Autowired
     private JwtService jwtService;
-
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
 
     @Test
@@ -93,6 +99,47 @@ public class AuthControllerTest {
                     userService.getUserByEmail(MOCK_EMAIL).getPassword()
                 )
         ).isTrue();
+
+    }
+
+
+    @Test
+    @SqlGroup(
+            {
+                    @Sql(scripts = "/sql/createEnabledUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD),
+
+                    @Sql(scripts = "/sql/truncateUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD),
+            }
+    )
+    @Transactional
+    public void logoutSuccessful() throws Exception {
+        final String MOCK_EMAIL = "some@gmail.com";
+
+        User user = userService.getUserByEmail(MOCK_EMAIL);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .refreshToken(jwtService.createJwt(MOCK_EMAIL, TokenType.REFRESH, Role.USER))
+                .user(user)
+                .build();
+
+        refreshTokenService.saveRefreshToken(refreshToken);
+
+        var logoutRequest = RefreshTokenDTO
+                .builder()
+                .refreshToken(refreshToken.getRefreshToken())
+                .build();
+
+        String requestBody = objectMapper.writeValueAsString(logoutRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)).andExpect(status().isOk());
+
+        assertThatCode(
+                () -> refreshTokenService.getRefreshTokenByUser(user)
+        ).isInstanceOf(BadCredentialsException.class);
 
     }
 
@@ -173,10 +220,32 @@ public class AuthControllerTest {
     }
 
     @Test
+    @Transactional
+    @SqlGroup(
+            {
+                    @Sql(scripts = "/sql/createEnabledUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD),
+
+                    @Sql(scripts = "/sql/truncateUser.sql"
+                            , executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+            }
+    )
     public void refreshTokenSuccessfully() throws Exception {
         final String MOCK_EMAIL = "some@gmail.com";
-        RefreshTokenDTO refreshTokenDTO = RefreshTokenDTO.builder()
+
+        User user = userService.getUserByEmail(MOCK_EMAIL);
+
+        RefreshToken refreshToken = RefreshToken.builder()
                 .refreshToken(jwtService.createJwt(MOCK_EMAIL, TokenType.REFRESH, Role.USER))
+                .user(user)
+                .build();
+
+        refreshTokenService.saveRefreshToken(refreshToken);
+
+        refreshTokenService.getRefreshTokenByUser(user);
+
+        RefreshTokenDTO refreshTokenDTO = RefreshTokenDTO.builder()
+                .refreshToken(refreshToken.getRefreshToken())
                 .build();
 
         String requestBody = objectMapper.writeValueAsString(refreshTokenDTO);

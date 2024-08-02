@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,22 +21,29 @@ public class UserService {
 
     private final UserRepository userRepository;
     private  OTPService otpService;
-    private final PasswordEncoder passwordEncoder;
+    private RefreshTokenService refreshTokenService;
 
     @Autowired
     public void setOTPService(@Lazy OTPService otpService){
         this.otpService = otpService;
     }
 
+    @Autowired
+    public void setRefreshTokenService(@Lazy RefreshTokenService refreshTokenService) {
+        this.refreshTokenService = refreshTokenService;
+    }
+
+    @Transactional
     public User getUserByEmail(String email) throws BadCredentialsException {
         return userRepository.getUserByEmail(email).orElseThrow(
                 () -> new BadCredentialsException("The user with this email was not found"));
     }
 
+    @Transactional
     public OperationInfo register(RegisterRequest registerRequest) throws BadCredentialsException {
 
         User user = User.builder().email(registerRequest.getEmail())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .password(registerRequest.getPassword())
                 .firstname(registerRequest.getFirstname())
                 .lastname(registerRequest.getLastname())
                 .disabled(true).build();
@@ -55,7 +61,9 @@ public class UserService {
         Optional<User> optionalUser = userRepository.getUserByEmail(email);
         if(optionalUser.isPresent()){
             otpService.deleteOtpTokenByUser(optionalUser.get());
+            refreshTokenService.deleteRefreshTokenByUser(optionalUser.get());
             userRepository.deleteUserByEmail(email);
         }
     }
+
 }
