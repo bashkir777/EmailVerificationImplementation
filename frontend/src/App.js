@@ -10,26 +10,26 @@ function App() {
     const [provider, setProvider] = useState(Providers.LoginProvider);
     return (
         <>
-            {!authenticated
-                && provider === Providers.LoginProvider
-                && <LoginProvider setProvider={setProvider}
-                                  setAuthenticated={setAuthenticated}/>}
-            {!authenticated
-                && provider === Providers.RegisterProvider
-                && <RegisterProvider setProvider={setProvider}
-                                     setAuthenticated={setAuthenticated}/>}
-            {!authenticated
-                && provider === Providers.ChangePasswordProvider
-                && <ChangePasswordProvider setProvider={setProvider} setAuthenticated={setAuthenticated}
-                                           backToLogin={() => {
-                                               setAuthenticated(false);
-                                               setProvider(Providers.LoginProvider);
-                                           }}/>}
-            {authenticated && <Logout backToLogin={() => {
-                setAuthenticated(false);
-                setProvider(Providers.LoginProvider);
-            }}/>}
-        </>
+        {!authenticated
+            && provider === Providers.LoginProvider
+            && <LoginProvider setProvider={setProvider}
+                              setAuthenticated={setAuthenticated}/>}
+        {!authenticated
+            && provider === Providers.RegisterProvider
+            && <RegisterProvider setProvider={setProvider}
+                                 setAuthenticated={setAuthenticated}/>}
+        {!authenticated
+            && provider === Providers.ChangePasswordProvider
+            && <ChangePasswordProvider setProvider={setProvider} setAuthenticated={setAuthenticated}
+                                       backToLogin={() => {
+                                           setAuthenticated(false);
+                                           setProvider(Providers.LoginProvider);
+                                       }}/>}
+        {authenticated && <div className="vh-100 container-fluid d-flex gradient-custom align-items-center justify-content-center"> <Logout backToLogin={() => {
+            setAuthenticated(false);
+            setProvider(Providers.LoginProvider);
+        }}/></div>}
+       </>
     );
 }
 

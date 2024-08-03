@@ -89,7 +89,7 @@ const EmailVerificationForm = ({URL, cancelHandler, userData, setAuthenticated})
                     className="container d-flex justify-content-center align-items-center w-50 px-4 py-5 text-center bg-dark text-white rounded-top-4 h2 mb-0 mt-5">
                     <div className="row rounded-3 ms-2 mx-0">
                         <div className="col text-center  px-0">
-                            Enter the 6 digits just sent to your email
+                            Please enter the code sent to yout email
                         </div>
                     </div>
                 </div>

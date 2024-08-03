@@ -44,7 +44,13 @@ const RegisterForm = ({setProvider, setFlow, userData, setEmail, setPassword, se
             headers: {
                 "Content-Type": "application/json"
             }
-        }).then(response => response.json())
+        }).then(response => {
+            if(response.ok){
+                return response.json();
+            }else{
+                return {success: false, description: "Problem occurred. Please try again later"}
+            }
+        })
             .then(data =>{
                 if(data.success){
                     setFlow(RegisterFlow.EmailVerification);

@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {MDBBtn} from "mdb-react-ui-kit";
 import ErrorMessage from "../../tools/ErrorMessage";
 import {LOGOUT_URL} from "../../tools/consts";
+import  "../../css/main.css"
 
 const Logout = ({backToLogin}) => {
     const [error, setError] = useState(false);
