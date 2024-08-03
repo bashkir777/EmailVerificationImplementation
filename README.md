@@ -31,8 +31,8 @@ __Deployment__
 git clone .../EmailVerificationImplementation 
 ```
 
-### Create gmail enable 2FA and crete app password
-__How to do it__: https://www.youtube.com/watch?v=ugIUObNHZdo&t=171s
+### Create gmail, enable 2FA and create app password
+__Here is how to do it__: https://www.youtube.com/watch?v=ugIUObNHZdo&t=171s
 
 ### Go to root folder
 ```bash
