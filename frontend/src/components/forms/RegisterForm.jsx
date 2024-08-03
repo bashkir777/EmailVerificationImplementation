@@ -2,17 +2,40 @@ import React, {useState} from 'react';
 import {MDBBtn, MDBInput} from "mdb-react-ui-kit";
 import {Providers, REGISTER_URL, RegisterFlow} from "../../tools/consts";
 import ErrorMessage from "../../tools/ErrorMessage";
+import {validateEmail} from "../../tools/functions";
 
 const RegisterForm = ({setProvider, setFlow, userData, setEmail, setPassword, setFirstname, setLastname}) => {
 
     const [error, setError] = useState(false);
     const [message, setMessage] = useState('');
 
-    const nextHandler = () => {
+    const nextHandler = async () => {
         if (userData.email.length === 0 || userData.password.length === 0
             || userData.firstname.length === 0 || userData.lastname.length === 0) {
             setError(true);
             setMessage("Please fill into all fields");
+            return;
+        }
+        if(userData.password.length < 6){
+            setError(true);
+            setMessage("Password is too short. Please commit something longer");
+            return;
+        }
+        if(userData.firstname.length < 4){
+            setError(true);
+            setMessage("Name is too short. Please commit something longer");
+            return;
+        }
+        if(userData.lastname.length < 4){
+            setError(true);
+            setMessage("Lastname is too short. Please commit something longer");
+            return;
+        }
+
+        const validEmail = validateEmail(userData.email);
+        if(!validEmail) {
+            setError(true);
+            setMessage("Email is invalid. Please try again");
             return;
         }
         fetch(REGISTER_URL, {

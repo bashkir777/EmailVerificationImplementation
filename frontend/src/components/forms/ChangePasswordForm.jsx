@@ -2,12 +2,21 @@ import React, {useState} from 'react';
 import {MDBInput, MDBBtn} from 'mdb-react-ui-kit';
 import ErrorMessage from "../../tools/ErrorMessage";
 import {RegisterFlow as ChangePasswordFlow, SEND_OTP_URL} from "../../tools/consts";
+import {validateEmail} from "../../tools/functions";
 
 const ChangePasswordForm = ({userData, backToLogin, setFlow, setEmail, setNewPassword}) => {
 
     const [error, setError] = useState(false);
     const [message, setMessage] = useState('');
-    const nextHandler = () =>{
+    const nextHandler = async () =>{
+
+        const validEmail = validateEmail(userData.email);
+        if(!validEmail) {
+            setError(true);
+            setMessage("Email is invalid. Please try again");
+            return;
+        }
+
         fetch(SEND_OTP_URL + userData.email, {
             method:'GET',
         }).then(response => response.json())

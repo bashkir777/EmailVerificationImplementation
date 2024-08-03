@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {MDBInput, MDBBtn} from 'mdb-react-ui-kit';
 import {LOGIN_URL, LoginFlow, Providers} from "../../tools/consts";
 import ErrorMessage from "../../tools/ErrorMessage";
+import {validateEmail} from "../../tools/functions";
 
 const LoginForm = ({userData, setEmail, setPassword, setProvider, setFlow}) => {
 
@@ -9,6 +10,13 @@ const LoginForm = ({userData, setEmail, setPassword, setProvider, setFlow}) => {
     const[message, setMessage] = useState('');
 
     const loginHandler = () => {
+        const validEmail = validateEmail(userData.email);
+        if(!validEmail) {
+            setError(true);
+            setMessage("Email is invalid. Please try again");
+            return;
+        }
+
         fetch(LOGIN_URL, {
             method: 'POST',
             body: JSON.stringify(userData),

@@ -19,8 +19,8 @@ services:
       - "8081"
     environment:
       - server_port=8081
-      - sender_gmail={sender_email}
-      - sender_app_password={app_password}
+      - sender_gmail=supletsovd@gmail.com
+      - sender_app_password=mrlwlhcjnjvnmxqj
       - rabbitmq_host=rabbitmq
       - rabbitmq_port=5672
       - rabbitmq_username=admin
